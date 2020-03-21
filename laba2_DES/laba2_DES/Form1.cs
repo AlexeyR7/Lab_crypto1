@@ -21,11 +21,14 @@ namespace laba2_DES
         {
             InitializeComponent();
             DESalg = DES.Create();
+            byte[] b = {241,227,34,28,171,255,175,35};
+            DESalg.IV = b;
             openFileDialog1.Filter = "Text files(*.txt)|*.txt|All files(*.*)|*.*";
             saveFileDialog1.Filter = "Text files(*.txt)|*.txt|All files(*.*)|*.*";
+            printkey();
         }
 
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -35,6 +38,7 @@ namespace laba2_DES
                 string filename = saveFileDialog1.FileName;
                 string sData = textBox1.Text;
                 EncryptTextToFile(sData, filename, DESalg.Key, DESalg.IV);
+              
             }
             catch (Exception er)
             {
@@ -165,6 +169,42 @@ namespace laba2_DES
             }
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+            // получаем выбранный файл
+            string filename = saveFileDialog1.FileName;
+            // сохраняем текст в файл
+            System.IO.File.WriteAllText(filename, textBox1.Text);
+            System.IO.File.WriteAllBytes(filename, DESalg.Key);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+            // получаем выбранный файл
+            string filename = openFileDialog1.FileName;
+            // читаем файл в строку
+            DESalg.Key = System.IO.File.ReadAllBytes(filename);
+            printkey();
+        }
         
+        void printkey()
+        {
+            string buff = "";
+            foreach (var item in DESalg.Key)
+            {
+                buff += item.ToString() + " ";
+            }
+            textBox2.Text = buff;
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+           
+        }
     }
 }
