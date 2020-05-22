@@ -13,7 +13,7 @@ namespace Laba7
 {
     class Program
     {
-        static uint _nonce = 1535000000; //1500000000;1540236492;
+        static uint _nonce = 0; //1500000000;1540236492;
 
         static SHA256Managed _hasher = new SHA256Managed();
         static long _nonceOffset;
