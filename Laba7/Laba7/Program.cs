@@ -13,7 +13,7 @@ namespace Laba7
 {
     class Program
     {
-        static uint _nonce = 0;
+        static uint _nonce = 0; //1500000000;1540236492;
 
         static SHA256Managed _hasher = new SHA256Managed();
         static long _nonceOffset;
@@ -27,6 +27,8 @@ namespace Laba7
         {
             string data = "010000001e60224709df1feb2e2849b7b10570abf7d4355ba8e2f6df121100000000000028cc65b7be2f8a1edc2af86ef369472443a1b70479cee205e8db5440cfbe943f57fad74df2b9441acc24ce5b";
             int g= Mining(Utils.ToBytes(data));
+            Console.WriteLine();
+            Console.ReadLine();
         }
 
         static int Mining(byte[] Data)
@@ -101,7 +103,7 @@ namespace Laba7
             Console.WriteLine("[Succes]Share found!");
             Console.WriteLine("Share: " + Utils.ToString(Current));
             Console.WriteLine("Nonce: " + Utils.ToString(_nonce));
-            Console.WriteLine("Hash: " + Utils.EndianFlip32BitChunks(Utils.ToString(doubleHash)));
+            Console.WriteLine("Hash: " + Utils.ToString(doubleHash.Reverse().ToArray()));
         }
     }
 
