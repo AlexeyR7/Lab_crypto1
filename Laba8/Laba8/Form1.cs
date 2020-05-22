@@ -76,9 +76,9 @@ namespace Laba8
             long pixelElementIndex = 0;
             int R = 0, G = 0, B = 0;
 
-            for (int i = 0; i < bmp.Height; i++)
+            for (int i = 0; i < bmp.Height; i+=3)
             {
-                for (int j = 0; j < bmp.Width; j++)
+                for (int j = 0; j < bmp.Width; j+=5)
                 {
                     Color pixel = bmp.GetPixel(j, i);
                     R = pixel.R - pixel.R % 2;
@@ -153,9 +153,9 @@ namespace Laba8
             int colorUnitIndex = 0;
             int charValue = 0;
             string extractedText = String.Empty;
-            for (int i = 0; i < bmp.Height; i++)
+            for (int i = 0; i < bmp.Height; i+=3)
             {
-                for (int j = 0; j < bmp.Width; j++)
+                for (int j = 0; j < bmp.Width; j+=5)
                 {
                     Color pixel = bmp.GetPixel(j, i);
                     for (int n = 0; n < 3; n++)
