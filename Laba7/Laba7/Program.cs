@@ -13,7 +13,6 @@ namespace Laba7
 {
     class Program
     {
-        //Variables
         static uint _nonce = 0;
 
         static SHA256Managed _hasher = new SHA256Managed();
@@ -30,10 +29,6 @@ namespace Laba7
             int g= Mining(Utils.ToBytes(data));
         }
 
-        //Hello
-
-
-        //Main Miner
         static int Mining(byte[] Data)
         {
             Current = (byte[])Data.Clone();
@@ -154,29 +149,5 @@ namespace Laba7
             return result;
         }
 
-        public static string RemovePadding(string input)
-        {
-            //payload length: final 64 bits in big-endian - 0x0000000000000280 = 640 bits = 80 bytes = 160 chars
-            return input.Substring(0, 160);
-        }
-
-        public static string AddPadding(string input)
-        {
-            //add the padding to the payload. It never changes.
-            return input + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
-        }
-    }
-
-    class Hash
-    {
-        private SHA256Managed _hasher;
-        public Hash()
-        {
-            _hasher = new SHA256Managed();
-        }
-        public byte[] ComputeHash(byte[] input, int offset, int Length)
-        {
-            return _hasher.ComputeHash(input, offset, Length);
-        }
     }
 }
