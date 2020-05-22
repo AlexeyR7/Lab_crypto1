@@ -18,7 +18,7 @@ namespace Laba7
 
         static SHA256Managed _hasher = new SHA256Managed();
         static long _nonceOffset;
-        static byte[] Data;
+
         static byte[] Current;
         private static DateTime _lastPrint = DateTime.Now;
         static uint _batchSize = 100000;
@@ -26,24 +26,20 @@ namespace Laba7
         static byte[] doubleHash;
         static void Main(string[] args)
         {
-           int g= Mining();
+            string data = "010000001e60224709df1feb2e2849b7b10570abf7d4355ba8e2f6df121100000000000028cc65b7be2f8a1edc2af86ef369472443a1b70479cee205e8db5440cfbe943f57fad74df2b9441acc24ce5b";
+            int g= Mining(Utils.ToBytes(data));
         }
 
         //Hello
 
 
         //Main Miner
-        static int Mining()
+        static int Mining(byte[] Data)
         {
-            string data = "010000001e60224709df1feb2e2849b7b10570abf7d4355ba8e2f6df121100000000000028cc65b7be2f8a1edc2af86ef369472443a1b70479cee205e8db5440cfbe943f57fad74df2b9441acc24ce5b";
-
-            //data = Utils.EndianFlip32BitChunks(data);
-            Data = Utils.ToBytes(data);
-
             Current = (byte[])Data.Clone();
             _nonceOffset = Data.Length - 4;
-
-
+            Console.WriteLine("Data: " + Utils.ToString(Data));
+            Console.WriteLine("Start Mining");
             while (true)
             {
                 if (GetHash(_batchSize) == 1)
@@ -69,19 +65,14 @@ namespace Laba7
         {
             for (int nn = 0; nn < n; nn++)
             {
-
-               // BitConverter.GetBytes(_nonce).CopyTo(Current, _nonceOffset);
+                BitConverter.GetBytes(_nonce).CopyTo(Current, _nonceOffset);
                 doubleHash = Sha256(Sha256(Current));
-
-                //count trailing bytes that are zero
                 int zeroBytes = 0;
-                for (int i = 31; i >= 28; i--, zeroBytes++)
-                    if (doubleHash[i] > 0)
-                        break;
+                for (int i = 31; i >= 28; i--)
+                    zeroBytes += doubleHash[i];
                 //Console.WriteLine(_nonce.ToString() +  "\t\t" + Utils.ToString(doubleHash));
-                if (zeroBytes == 4)
+                if (zeroBytes == 0)
                     return 1;
-                //increase
                 if (_nonce == int.MaxValue)
                     return -1;
                 _nonce++;
