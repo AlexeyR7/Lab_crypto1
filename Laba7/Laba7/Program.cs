@@ -1,22 +1,191 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Laba7
 {
-    static class Program
+    class Program
     {
-        /// <summary>
-        /// Главная точка входа для приложения.
-        /// </summary>
-        [STAThread]
-        static void Main()
+        //Variables
+        static uint _nonce = 0;
+
+        static SHA256Managed _hasher = new SHA256Managed();
+        static long _nonceOffset;
+        static byte[] Data;
+        static byte[] Current;
+        private static DateTime _lastPrint = DateTime.Now;
+        static uint _batchSize = 100000;
+        static int printcounter = 0;
+        static byte[] doubleHash;
+        static void Main(string[] args)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+           int g= Mining();
+        }
+
+        //Hello
+
+
+        //Main Miner
+        static int Mining()
+        {
+            string data = "010000001e60224709df1feb2e2849b7b10570abf7d4355ba8e2f6df121100000000000028cc65b7be2f8a1edc2af86ef369472443a1b70479cee205e8db5440cfbe943f57fad74df2b9441acc24ce5b";
+
+            //data = Utils.EndianFlip32BitChunks(data);
+            Data = Utils.ToBytes(data);
+
+            Current = (byte[])Data.Clone();
+            _nonceOffset = Data.Length - 4;
+
+
+            while (true)
+            {
+                if (GetHash(_batchSize) == 1)
+                {
+                    printData();
+                    break;
+                }
+                else if (GetHash(_batchSize) == 0)
+                {
+                    PrintCurrentState();
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+            return 0;
+        }
+
+
+        static int GetHash(uint  n)
+        {
+            for (int nn = 0; nn < n; nn++)
+            {
+
+               // BitConverter.GetBytes(_nonce).CopyTo(Current, _nonceOffset);
+                doubleHash = Sha256(Sha256(Current));
+
+                //count trailing bytes that are zero
+                int zeroBytes = 0;
+                for (int i = 31; i >= 28; i--, zeroBytes++)
+                    if (doubleHash[i] > 0)
+                        break;
+                //Console.WriteLine(_nonce.ToString() +  "\t\t" + Utils.ToString(doubleHash));
+                if (zeroBytes == 4)
+                    return 1;
+                //increase
+                if (_nonce == int.MaxValue)
+                    return -1;
+                _nonce++;
+            }
+            return 0;
+        }
+        static byte[] Sha256(byte[] input)
+        {
+            byte[] crypto = _hasher.ComputeHash(input, 0, input.Length);
+            return crypto;
+
+        }
+       
+        private static void PrintCurrentState()
+        {
+            if (printcounter != 10)
+            {
+                printcounter += 1;
+                return;
+            }
+            printcounter = 0;
+            double progress = ((double)_nonce / uint.MaxValue) * 100;
+            //
+            TimeSpan span = DateTime.Now - _lastPrint;
+            Console.WriteLine("Speed: " + (int)(((_batchSize) / 100) / span.TotalSeconds) + "Kh/sec " + "Share progress:" + progress.ToString("F2") + "%");
+            _lastPrint = DateTime.Now;
+        }
+
+        private static void printData()
+        {
+            Console.WriteLine("[Succes]Share found!");
+            Console.WriteLine("Share: " + Utils.ToString(Current));
+            Console.WriteLine("Nonce: " + Utils.ToString(_nonce));
+            Console.WriteLine("Hash: " + Utils.EndianFlip32BitChunks(Utils.ToString(doubleHash)));
+        }
+    }
+
+    class Utils
+    {
+
+        public static byte[] ToBytes(string input)
+        {
+            byte[] bytes = new byte[input.Length / 2];
+            for (int i = 0, j = 0; i < input.Length; j++, i += 2)
+                bytes[j] = byte.Parse(input.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
+
+            return bytes;
+        }
+
+        public static string ToString(byte[] input)
+        {
+            string result = "";
+            foreach (byte b in input)
+                result += b.ToString("x2");
+
+            return result;
+        }
+
+        public static string ToString(uint value)
+        {
+            string result = "";
+            foreach (byte b in BitConverter.GetBytes(value))
+                result += b.ToString("x2");
+
+            return result;
+        }
+
+        public static string EndianFlip32BitChunks(string input)
+        {
+            //32 bits = 4*4 bytes = 4*4*2 chars
+            string result = "";
+            for (int i = 0; i < input.Length; i += 8)
+                for (int j = 0; j < 8; j += 2)
+                {
+                    //append byte (2 chars)
+                    result += input[i - j + 6];
+                    result += input[i - j + 7];
+                }
+            return result;
+        }
+
+        public static string RemovePadding(string input)
+        {
+            //payload length: final 64 bits in big-endian - 0x0000000000000280 = 640 bits = 80 bytes = 160 chars
+            return input.Substring(0, 160);
+        }
+
+        public static string AddPadding(string input)
+        {
+            //add the padding to the payload. It never changes.
+            return input + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+        }
+    }
+
+    class Hash
+    {
+        private SHA256Managed _hasher;
+        public Hash()
+        {
+            _hasher = new SHA256Managed();
+        }
+        public byte[] ComputeHash(byte[] input, int offset, int Length)
+        {
+            return _hasher.ComputeHash(input, offset, Length);
         }
     }
 }
