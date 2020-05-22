@@ -36,27 +36,16 @@ namespace Laba8
             {
                 imagePictureBox.Image = Image.FromFile(open_dialog.FileName);
             }
+            bmp = (Bitmap)imagePictureBox.Image;
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
             SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.Filter = "Png Image|*.png|Bitmap Image|*.bmp";
+            save_dialog.Filter = "Bitmap Image|*.bmp";
             if (save_dialog.ShowDialog() == DialogResult.OK)
             {
-                switch (save_dialog.FilterIndex)
-                {
-                    case 0:
-                        {
-                            bmp.Save(save_dialog.FileName, ImageFormat.Png);
-                        }
-                        break;
-                    case 1:
-                        {
-                            bmp.Save(save_dialog.FileName, ImageFormat.Bmp);
-                        }
-                        break;
-                }
+                bmp.Save(save_dialog.FileName, ImageFormat.Bmp);
             }
         }
 
